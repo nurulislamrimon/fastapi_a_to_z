@@ -1,14 +1,21 @@
 
-from fastapi import APIRouter
+import platform
+import sys
+import time
+
+import fastapi
+from fastapi import APIRouter, Request
+
 
 app_router = APIRouter()
 
-app_router.get(
+@app_router.get(
     "/health",
     tags=["Health"],
     summary="System health check",
 )
-async def health_check():
+async def health_check(request: Request):
+    app = request.app
     uptime_seconds = time.time() - app.state.start_time
 
     return {

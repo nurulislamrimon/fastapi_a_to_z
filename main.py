@@ -1,10 +1,7 @@
-import platform
-import sys
 import time
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import  AsyncIterator
 
-import fastapi
 from fastapi import FastAPI
 
 # internal imports
