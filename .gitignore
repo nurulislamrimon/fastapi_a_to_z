@@ -1,0 +1,67 @@
+# ==========================================
+# FastAPI & Python Runtime
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# Environments & Credentials (CRITICAL)
+# ==========================================
+.env
+.env.*
+!.env.example
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# Dependency Managers
+# ==========================================
+# Un-comment if you prefer not to lock versions (not recommended for apps)
+# Pipfile.lock
+# poetry.lock
+# pdm.lock
+
+# ==========================================
+# FastAPI/App Specific & Databases
+# ==========================================
+*.db
+*.sqlite3
+htmlcov/
+.coverage
+.coverage.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+logs/
+*.log
+
+# ==========================================
+# Editors and IDEs
+# ==========================================
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ==========================================
+# OS Specific
+# ==========================================
+.DS_Store
+Thumbs.db
