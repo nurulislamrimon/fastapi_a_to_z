@@ -1,6 +1,6 @@
 import time
 from contextlib import asynccontextmanager
-from typing import  AsyncIterator
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
@@ -12,13 +12,7 @@ START_TIME = time.time()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """
-    Application lifecycle.
-
-    Startup code goes before `yield`.
-    Shutdown/cleanup code goes after `yield`.
-    """
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     app.state.start_time = time.time()
 
