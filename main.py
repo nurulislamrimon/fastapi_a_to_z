@@ -5,6 +5,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 
 # internal imports
+from common.handlers import register_exception_handlers
 from routes.router import router
 
 
@@ -33,6 +34,8 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+
+register_exception_handlers(app)
 
 app.include_router(
     router=router,

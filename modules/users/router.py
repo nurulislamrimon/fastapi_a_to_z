@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from common.exceptions import NotFoundError
 from database.session import get_db
 from modules.auth.dependencies import get_current_user
 from modules.users.model import User
@@ -41,10 +42,7 @@ def get_user(
 ) -> User:
     user = get_user_by_id(db, user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found.",
-        )
+        raise NotFoundError(message="User not found.", code="user_not_found")
     return user
 
 
@@ -66,10 +64,7 @@ def update_user_route(
         email=payload.email,
     )
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found.",
-        )
+        raise NotFoundError(message="User not found.", code="user_not_found")
     return user
 
 
@@ -84,7 +79,4 @@ def delete_user_route(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
     if not delete_user(db, user_id):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found.",
-        )
+        raise NotFoundError(message="User not found.", code="user_not_found")
