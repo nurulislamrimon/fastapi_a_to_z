@@ -1,0 +1,59 @@
+from typing import Any, Mapping, Sequence
+
+from pydantic import BaseModel, Field
+from sqlalchemy import or_
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import Select
+
+from common.response import PaginationMeta, paginate
+
+
+class PageAndSearchParams(BaseModel):
+    search: str | None = Field(default=None, max_length=100)
+    page: int = Field(default=1, ge=1)
+    limit: int = Field(default=10, ge=1, le=100)
+
+
+def apply_search(
+    statement: Select,
+    search: str | None,
+    columns: Sequence[object],
+) -> Select:
+    if not search:
+        return statement
+
+    term = f"%{search.strip()}%"
+    return statement.where(or_(*(column.ilike(term) for column in columns)))
+
+
+def apply_exact_filters(
+    statement: Select,
+    conditions: Mapping[object, Any],
+) -> Select:
+    predicates = [
+        column == value
+        for column, value in conditions.items()
+        if value is not None
+    ]
+
+    if not predicates:
+        return statement
+
+    return statement.where(*predicates)
+
+
+def query_list(
+    db: Session,
+    statement: Select,
+    params: PageAndSearchParams,
+    *,
+    search_columns: Sequence[object] | None = None,
+    filter_conditions: Mapping[object, Any] | None = None,
+) -> tuple[list[Any], PaginationMeta]:
+    if search_columns:
+        statement = apply_search(statement, params.search, search_columns)
+
+    if filter_conditions:
+        statement = apply_exact_filters(statement, filter_conditions)
+
+    return paginate(db, statement, params.page, params.limit)

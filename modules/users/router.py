@@ -8,7 +8,7 @@ from common.response import ResponseModel, ok
 from database.session import get_db
 from modules.auth.dependencies import get_current_user
 from modules.users.model import User
-from modules.users.schemas import UserRead, UserUpdate
+from modules.users.schemas import UserQueryParams, UserRead, UserUpdate
 from modules.users.service import (
     delete_user,
     get_all_users,
@@ -27,10 +27,9 @@ router = APIRouter(prefix="/users", tags=["Users"])
 def list_users(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-    page: Annotated[int, Query(ge=1)] = 1,
-    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+    params: Annotated[UserQueryParams, Query()] = UserQueryParams(),
 ) -> ResponseModel[list[UserRead]]:
-    items, meta = get_all_users(db, page, limit)
+    items, meta = get_all_users(db, params)
     return ok(data=items, meta=meta)
 
 

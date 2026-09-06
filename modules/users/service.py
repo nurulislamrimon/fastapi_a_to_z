@@ -1,16 +1,27 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from common.response import PaginationMeta, paginate
+from common.filters import query_list
+from common.response import PaginationMeta
+from modules.users.variables import FILTER_COLUMNS, SEARCH_COLUMNS
 from modules.users.model import User
+from modules.users.schemas import UserQueryParams
 
 
 def get_all_users(
     db: Session,
-    page: int = 1,
-    limit: int = 10,
+    params: UserQueryParams,
 ) -> tuple[list[User], PaginationMeta]:
-    return paginate(db, select(User), page, limit)
+    return query_list(
+        db,
+        select(User),
+        params,
+        search_columns=SEARCH_COLUMNS,
+        filter_conditions={
+            column: getattr(params, field)
+            for field, column in FILTER_COLUMNS.items()
+        },
+    )
 
 
 def get_user_by_id(db: Session, user_id: int) -> User | None:

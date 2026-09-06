@@ -1,5 +1,12 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 
+from common.filters import PageAndSearchParams
+
+
+class UserQueryParams(PageAndSearchParams):
+    name: str | None = None
+    email: str | None = None
+
 
 class UserRead(BaseModel):
     id: int
