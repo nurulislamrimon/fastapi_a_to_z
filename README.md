@@ -34,10 +34,10 @@ poetry install
 Start the Uvicorn server inside the Poetry environment. The `--reload` flag enables auto-reloading whenever you make changes to your code:
 
 ```bash
-poetry run uvicorn main:app --reload
+poetry run uvicorn main:app --reload --port 5000
 ```
 
-The application will start running at `http://127.0.0.1:8000`.
+The application will start running at `http://127.0.0.1:5000`.
 
 ## API Documentation
 
