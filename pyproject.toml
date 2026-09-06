@@ -6,10 +6,18 @@ authors = [
     {name = "nurulislamrimon", email = "nurulislamrimon@gmail.com"}
 ]
 requires-python = ">=3.11"
+
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
-    "uvicorn (>=0.52.4,<0.53.0)"
+    "uvicorn (>=0.52.4,<0.53.0)",
+    "sqlalchemy (>=2.0.52,<3.0.0)",
+    "psycopg (>=3.3.5,<4.0.0)",
+    "alembic (>=1.19.2,<2.0.0)",
+    "pydantic-settings (>=2.15.0,<3.0.0)"
 ]
+
+[tool.poetry]
+package-mode = false
 
 
 [build-system]

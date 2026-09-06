@@ -5,6 +5,7 @@ import time
 
 import fastapi
 from fastapi import APIRouter, Request
+from database.session import check_database
 
 
 app_router = APIRouter()
@@ -17,6 +18,7 @@ app_router = APIRouter()
 async def health_check(request: Request):
     app = request.app
     uptime_seconds = time.time() - app.state.start_time
+    database_healthy = check_database()
 
     return {
         "status": "healthy",
@@ -42,8 +44,8 @@ async def health_check(request: Request):
         },
 
         "dependencies": {
-            "database": {
-                "status": "not_configured",
+            "database": {                
+    "status": "healthy" if database_healthy else "unhealthy",
             },
             "redis": {
                 "status": "not_configured",
