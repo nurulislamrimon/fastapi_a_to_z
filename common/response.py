@@ -19,8 +19,8 @@ class ResponseModel(BaseModel, Generic[T]):
     success: bool = True
     message: str | None = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    data: T
     meta: PaginationMeta | None = None
+    data: T
 
 
 def ok(
@@ -30,9 +30,9 @@ def ok(
     meta: PaginationMeta | None = None,
 ) -> ResponseModel[T]:
     return ResponseModel(
-        data=data,
         message=message,
         meta=meta,
+        data=data,
     )
 
 
