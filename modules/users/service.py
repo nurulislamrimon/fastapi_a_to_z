@@ -1,10 +1,16 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from common.response import PaginationMeta, paginate
 from modules.users.model import User
 
 
-def get_all_users(db: Session) -> list[User]:
-    return db.query(User).all()
+def get_all_users(
+    db: Session,
+    page: int = 1,
+    limit: int = 10,
+) -> tuple[list[User], PaginationMeta]:
+    return paginate(db, select(User), page, limit)
 
 
 def get_user_by_id(db: Session, user_id: int) -> User | None:

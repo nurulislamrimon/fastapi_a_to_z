@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from common.exceptions import NotFoundError
+from common.response import ResponseModel, ok
 from database.session import get_db
 from modules.auth.dependencies import get_current_user
 from modules.users.model import User
@@ -20,35 +21,38 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get(
     "/",
-    response_model=list[UserRead],
+    response_model=ResponseModel[list[UserRead]],
     summary="Get all users",
 )
 def list_users(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> list[User]:
-    return get_all_users(db)
+    page: Annotated[int, Query(ge=1)] = 1,
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+) -> ResponseModel[list[UserRead]]:
+    items, meta = get_all_users(db, page, limit)
+    return ok(data=items, meta=meta)
 
 
 @router.get(
     "/{user_id}",
-    response_model=UserRead,
+    response_model=ResponseModel[UserRead],
     summary="Get a user by ID",
 )
 def get_user(
     user_id: int,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> User:
+) -> ResponseModel[UserRead]:
     user = get_user_by_id(db, user_id)
     if not user:
         raise NotFoundError(message="User not found.", code="user_not_found")
-    return user
+    return ok(data=user)
 
 
 @router.patch(
     "/{user_id}",
-    response_model=UserRead,
+    response_model=ResponseModel[UserRead],
     summary="Update a user",
 )
 def update_user_route(
@@ -56,7 +60,7 @@ def update_user_route(
     payload: UserUpdate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> User:
+) -> ResponseModel[UserRead]:
     user = update_user(
         db,
         user_id,
@@ -65,7 +69,7 @@ def update_user_route(
     )
     if not user:
         raise NotFoundError(message="User not found.", code="user_not_found")
-    return user
+    return ok(data=user, message="User updated successfully.")
 
 
 @router.delete(
