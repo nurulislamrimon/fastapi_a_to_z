@@ -5,6 +5,7 @@ import time
 
 import fastapi
 from fastapi import APIRouter, Request
+from database.redis import check_redis
 from database.session import check_database
 
 
@@ -48,7 +49,7 @@ async def health_check(request: Request):
     "status": "healthy" if database_healthy else "unhealthy",
             },
             "redis": {
-                "status": "not_configured",
+                "status": "healthy" if check_redis() else "unhealthy",
             },
         },
     }
