@@ -10,6 +10,11 @@ from common.response import PaginationMeta, paginate
 
 class PageAndSearchParams(BaseModel):
     search: str | None = Field(default=None, max_length=100)
+    sort: str | None = Field(
+        default=None,
+        max_length=200,
+        description="Comma-separated sort fields; prefix a field with '-' for descending order.",
+    )
     page: int = Field(default=1, ge=1)
     limit: int = Field(default=10, ge=1, le=100)
 
@@ -52,6 +57,35 @@ def build_filter_conditions(
     }
 
 
+def apply_sort(
+    statement: Select,
+    sort: str | None,
+    columns: Mapping[str, object],
+) -> Select:
+    if not sort:
+        return statement
+
+    ordering = []
+    for raw in sort.split(","):
+        raw = raw.strip()
+        if not raw:
+            continue
+
+        descending = raw.startswith("-")
+        field = raw[1:] if descending else raw
+
+        column = columns.get(field)
+        if column is None:
+            continue
+
+        ordering.append(column.desc() if descending else column.asc())
+
+    if not ordering:
+        return statement
+
+    return statement.order_by(*ordering)
+
+
 def query_list(
     db: Session,
     statement: Select,
@@ -60,6 +94,7 @@ def query_list(
     search_columns: Sequence[object] | None = None,
     filter_columns: Mapping[str, object] | None = None,
     filter_conditions: Mapping[object, Any] | None = None,
+    sort_columns: Mapping[str, object] | None = None,
 ) -> tuple[list[Any], PaginationMeta]:
     if search_columns:
         statement = apply_search(statement, params.search, search_columns)
@@ -69,5 +104,8 @@ def query_list(
 
     if filter_conditions:
         statement = apply_exact_filters(statement, filter_conditions)
+
+    if sort_columns:
+        statement = apply_sort(statement, params.sort, sort_columns)
 
     return paginate(db, statement, params.page, params.limit)

@@ -6,3 +6,9 @@ FILTER_COLUMNS = {
     "name": User.name,
     "email": User.email,
 }
+
+SORT_COLUMNS = {
+    "id": User.id,
+    "name": User.name,
+    "email": User.email,
+}

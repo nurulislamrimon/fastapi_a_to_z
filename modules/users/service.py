@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from common.filters import query_list
 from common.response import PaginationMeta
-from modules.users.variables import FILTER_COLUMNS, SEARCH_COLUMNS
+from modules.users.variables import FILTER_COLUMNS, SEARCH_COLUMNS, SORT_COLUMNS
 from modules.users.model import User
 from modules.users.schemas import UserQueryParams
 
@@ -18,6 +18,7 @@ def get_all_users(
         params,
         search_columns=SEARCH_COLUMNS,
         filter_columns=FILTER_COLUMNS,
+        sort_columns=SORT_COLUMNS,
     )
 
 
