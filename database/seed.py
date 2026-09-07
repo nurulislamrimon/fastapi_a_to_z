@@ -1,5 +1,6 @@
 import random
 import sys
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -31,6 +32,10 @@ def generate_users(count: int) -> list[User]:
                 name=f"{first} {last}",
                 email=email,
                 password_hash=default_password_hash,
+                age=random.randint(18, 80),
+                is_active=random.random() > 0.2,
+                created_at=datetime.now(timezone.utc)
+                - timedelta(days=random.randint(0, 365)),
             )
         )
 

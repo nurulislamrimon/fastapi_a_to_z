@@ -65,6 +65,8 @@ def update_user_route(
         user_id,
         name=payload.name,
         email=payload.email,
+        age=payload.age,
+        is_active=payload.is_active,
     )
     if not user:
         raise NotFoundError(message="User not found.", code="user_not_found")

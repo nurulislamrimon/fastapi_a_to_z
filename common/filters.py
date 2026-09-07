@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from pydantic import BaseModel, Field
 from sqlalchemy import or_
@@ -6,6 +6,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import Select
 
 from common.response import PaginationMeta, paginate
+
+Comparator = Callable[[object, Any], object]
+
+COMPARISON_OPS: dict[str, Comparator] = {
+    "gt": lambda column, value: column > value,
+    "gte": lambda column, value: column >= value,
+    "lt": lambda column, value: column < value,
+    "lte": lambda column, value: column <= value,
+}
 
 
 class PageAndSearchParams(BaseModel):
@@ -57,6 +66,32 @@ def build_filter_conditions(
     }
 
 
+def build_range_conditions(
+    params: PageAndSearchParams,
+    range_columns: Mapping[str, tuple[object, str]],
+) -> list[tuple[Any, object, str]]:
+    return [
+        (getattr(params, field), column, op)
+        for field, (column, op) in range_columns.items()
+        if getattr(params, field) is not None
+    ]
+
+
+def apply_range_filters(
+    statement: Select,
+    conditions: Sequence[tuple[Any, object, str]],
+) -> Select:
+    predicates = [
+        COMPARISON_OPS[op](column, value)
+        for value, column, op in conditions
+    ]
+
+    if not predicates:
+        return statement
+
+    return statement.where(*predicates)
+
+
 def apply_sort(
     statement: Select,
     sort: str | None,
@@ -94,6 +129,7 @@ def query_list(
     search_columns: Sequence[object] | None = None,
     filter_columns: Mapping[str, object] | None = None,
     filter_conditions: Mapping[object, Any] | None = None,
+    range_columns: Mapping[str, tuple[object, str]] | None = None,
     sort_columns: Mapping[str, object] | None = None,
 ) -> tuple[list[Any], PaginationMeta]:
     if search_columns:
@@ -104,6 +140,12 @@ def query_list(
 
     if filter_conditions:
         statement = apply_exact_filters(statement, filter_conditions)
+
+    if range_columns:
+        statement = apply_range_filters(
+            statement,
+            build_range_conditions(params, range_columns),
+        )
 
     if sort_columns:
         statement = apply_sort(statement, params.sort, sort_columns)
