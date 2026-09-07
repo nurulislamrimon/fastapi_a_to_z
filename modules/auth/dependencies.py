@@ -1,15 +1,13 @@
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from config.settings import settings
 from database.session import get_db
 from modules.auth.security import decode_access_token
 from modules.users.model import User
-
-bearer_scheme = HTTPBearer(auto_error=False)
 
 _CREDENTIALS_EXCEPTION = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -18,15 +16,28 @@ _CREDENTIALS_EXCEPTION = HTTPException(
 )
 
 
+def _extract_token(request: Request) -> str | None:
+    token = request.cookies.get(settings.auth_cookie_name)
+    if token:
+        return token
+
+    authorization = request.headers.get("Authorization")
+    if authorization and authorization.startswith("Bearer "):
+        return authorization.removeprefix("Bearer ").strip()
+
+    return None
+
+
 def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+    request: Request,
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
-    if credentials is None:
+    token = _extract_token(request)
+    if token is None:
         raise _CREDENTIALS_EXCEPTION
 
     try:
-        payload = decode_access_token(credentials.credentials)
+        payload = decode_access_token(token)
         user_id = int(payload["sub"])
     except (jwt.PyJWTError, KeyError, TypeError, ValueError):
         raise _CREDENTIALS_EXCEPTION

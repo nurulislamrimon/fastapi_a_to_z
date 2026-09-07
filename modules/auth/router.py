@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from common.exceptions import ConflictError, ForbiddenError
@@ -8,7 +8,11 @@ from common.response import ResponseModel, ok
 from database.session import get_db
 from modules.auth.dependencies import get_current_user
 from modules.auth.schemas import LoginRequest, RegisterRequest, TokenResponse
-from modules.auth.security import create_access_token
+from modules.auth.security import (
+    clear_auth_cookie,
+    create_access_token,
+    set_auth_cookie,
+)
 from modules.auth.service import (
     DuplicateEmailError,
     InvalidCredentialsError,
@@ -49,6 +53,7 @@ def register(
 )
 def login(
     payload: LoginRequest,
+    response: Response,
     db: Annotated[Session, Depends(get_db)],
 ) -> ResponseModel[TokenResponse]:
     try:
@@ -60,7 +65,20 @@ def login(
         )
 
     token = TokenResponse(access_token=create_access_token(subject=str(user.id)))
+    set_auth_cookie(response, token.access_token)
     return ok(data=token, message="Login successful.")
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Logout and clear the auth cookie",
+)
+def logout(
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> None:
+    clear_auth_cookie(response)
 
 
 @router.get(
