@@ -17,10 +17,7 @@ def get_all_users(
         select(User),
         params,
         search_columns=SEARCH_COLUMNS,
-        filter_conditions={
-            column: getattr(params, field)
-            for field, column in FILTER_COLUMNS.items()
-        },
+        filter_columns=FILTER_COLUMNS,
     )
 
 

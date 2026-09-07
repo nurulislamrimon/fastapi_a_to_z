@@ -42,16 +42,30 @@ def apply_exact_filters(
     return statement.where(*predicates)
 
 
+def build_filter_conditions(
+    params: PageAndSearchParams,
+    filter_columns: Mapping[str, object],
+) -> dict[object, Any]:
+    return {
+        column: getattr(params, field)
+        for field, column in filter_columns.items()
+    }
+
+
 def query_list(
     db: Session,
     statement: Select,
     params: PageAndSearchParams,
     *,
     search_columns: Sequence[object] | None = None,
+    filter_columns: Mapping[str, object] | None = None,
     filter_conditions: Mapping[object, Any] | None = None,
 ) -> tuple[list[Any], PaginationMeta]:
     if search_columns:
         statement = apply_search(statement, params.search, search_columns)
+
+    if filter_columns:
+        filter_conditions = build_filter_conditions(params, filter_columns)
 
     if filter_conditions:
         statement = apply_exact_filters(statement, filter_conditions)
