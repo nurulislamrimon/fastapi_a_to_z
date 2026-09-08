@@ -48,3 +48,9 @@ class BadRequestError(AppException):
     status_code = 400
     code = "bad_request"
     message = "Invalid request."
+
+
+class ServiceUnavailableError(AppException):
+    status_code = 503
+    code = "service_unavailable"
+    message = "A required service is temporarily unavailable."

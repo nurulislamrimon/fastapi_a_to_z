@@ -6,6 +6,7 @@ import time
 import fastapi
 from fastapi import APIRouter, Request
 from database.redis import check_redis
+from database.s3 import check_s3
 from database.session import check_database
 
 
@@ -45,11 +46,14 @@ async def health_check(request: Request):
         },
 
         "dependencies": {
-            "database": {                
-    "status": "healthy" if database_healthy else "unhealthy",
+            "database": {
+                "status": "healthy" if database_healthy else "unhealthy",
             },
             "redis": {
                 "status": "healthy" if check_redis() else "unhealthy",
+            },
+            "object_storage": {
+                "status": "healthy" if check_s3() else "unhealthy",
             },
         },
     }
